@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ meta.description }}">
+    <title>{{ meta.title }}</title>
+    {% if meta.favicon %}
+    <link rel="icon" href="{{ meta.favicon | safe }}">
+    {% endif %}
+    <style>
+        {{ css | safe }}
+    </style>
+    {% if meta.custom_css %}
+    <style>
+        {{ meta.custom_css | safe }}
+    </style>
+    {% endif %}
+</head>
+<body>
+    <!-- Dark Mode Toggle Button -->
+    {% if dark_mode.mode != "disable" %}
+    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+    {% endif %}
+
+    <!-- Share Modal -->
+    {% if qr_code_data %}
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <button class="share-modal-close" id="closeModal" aria-label="Close">&times;</button>
+            {% if meta.share_title %}
+            <h2>{{ meta.share_title }}</h2>
+            {% endif %}
+            <div class="qr-code-container">
+                <img src="{{ qr_code_data }}" alt="QR Code" class="qr-code-image">
+            </div>
+            <div class="share-link-container">
+                <input type="text" id="shareLink" value="{{ meta.page_url }}" readonly>
+                <button type="button" class="copy-button" id="copyButton">Copy</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container">
+        <div class="profile">
+            <div class="avatar-wrapper">
+                {% if profile.light.avatar %}
+                <img src="{{ profile.light.avatar }}" alt="{{ profile.name }}" class="avatar">
+                {% else %}
+                <div class="avatar-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                {% endif %}
+            </div>
+            <h1 class="name">{{ profile.name }}</h1>
+            <p class="bio">{{ profile.bio }}</p>
+
+            <!-- Social Links and Share Button -->
+            {% if profile.social_links or qr_code_data %}
+            <div class="social-container">
+                {% for social in profile.social_links %}
+                <a href="{{ social.url }}" class="social-link" target="_blank" rel="noopener noreferrer" {% if social.title %}title="{{ social.title }}"{% endif %}>
+                    {% if social.icon is starting_with("__INLINE_SVG__") %}
+                    {{ social.icon | replace(from="__INLINE_SVG__", to="") | safe }}
+                    {% elif social.icon is starting_with("http") or social.icon is starting_with("https") or social.icon is starting_with("/") or social.icon is starting_with("data:") %}
+                    <img src="{{ social.icon }}" alt="{{ social.title }}" class="social-icon-img">
+                    {% else %}
+                    <span class="social-icon-emoji">{{ social.icon }}</span>
+                    {% endif %}
+                </a>
+                {% endfor %}
+
+                {% if qr_code_data %}
+                <button class="social-link share-button-inline" id="shareButton" aria-label="Share this page">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="social-icon-svg">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                        <polyline points="16 6 12 2 8 6"></polyline>
+                        <line x1="12" y1="2" x2="12" y2="15"></line>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="links">
+            {% for link in links %}
+            {% set link_type = link.link_type | lower | default(value="block") %}
+
+            {% if link_type == "space" %}
+            {# Spacer element #}
+            <div class="link-spacer" style="height: {{ link.height | default(value='40px') }};"></div>
+
+            {% else %}
+            {# Block type - can be clickable (with url) or non-clickable (without url) #}
+            {% if link.url %}
+            <a href="{{ link.url }}" class="link-button" target="_blank" rel="noopener noreferrer">
+            {% else %}
+            <div class="link-button link-button-static">
+            {% endif %}
+                {% if link.icon %}
+                <span class="link-icon">
+                    {% if link.icon is starting_with("__INLINE_SVG__") %}
+                    {{ link.icon | replace(from="__INLINE_SVG__", to="") | safe }}
+                    {% elif link.icon is starting_with("http") or link.icon is starting_with("https") or link.icon is starting_with("/") or link.icon is starting_with("data:") %}
+                    <img src="{{ link.icon }}" alt="" class="icon-image">
+                    {% else %}
+                    <span class="icon-emoji">{{ link.icon }}</span>
+                    {% endif %}
+                </span>
+                {% endif %}
+                <span class="link-content">
+                    {% if link.title %}
+                    <span class="link-title">{{ link.title }}</span>
+                    {% endif %}
+                    {% if link.description %}
+                    <span class="link-description">{{ link.description }}</span>
+                    {% endif %}
+                </span>
+                {% if link.url %}
+                <span class="link-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </span>
+                {% endif %}
+            {% if link.url %}
+            </a>
+            {% else %}
+            </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {% if meta.show_footer %}
+        <footer class="footer">
+            <p>Made with <a href="https://github.com/dephilia/genkan" target="_blank" rel="noopener noreferrer">Genkan</a></p>
+        </footer>
+        {% endif %}
+    </div>
+
+    {% if meta.analytics %}
+    {{ meta.analytics | safe }}
+    {% endif %}
+
+    {% if js %}
+    <script>
+        // Dark mode configuration
+        window.GENKAN_DARK_MODE = {
+            mode: "{{ dark_mode.mode }}"
+        };
+
+        {{ js | safe }}
+    </script>
+    {% endif %}
+</body>
+</html>

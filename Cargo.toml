@@ -1,0 +1,31 @@
+[package]
+name = "genkan"
+version = "0.1.0"
+edition = "2024"
+authors = ["Genkan Contributors"]
+description = "A static site generator for creating Linktree-like pages"
+license = "MIT"
+repository = "https://github.com/dephilia/genkan"
+keywords = ["static-site-generator", "linktree", "link-page", "static-html"]
+categories = ["command-line-utilities", "web-programming"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_derive = "1.0"
+toml = "0.8"
+tera = "1.19"
+clap = { version = "4.5", features = ["derive"] }
+anyhow = "1.0"
+qrcode = "0.14"
+image = "0.25"
+base64 = "0.22"
+ureq = "2.10"
+regex = "1.10"
+
+[lib]
+name = "genkan"
+path = "src/lib.rs"
+
+[[bin]]
+name = "genkan"
+path = "src/main.rs"
