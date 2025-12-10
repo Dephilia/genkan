@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/genkan.svg)](https://crates.io/crates/genkan)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/dephilia/genkan/ci.yml?branch=main)](https://github.com/dephilia/genkan/actions)
-[![Rust Version](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
+[![Rust Version](https://img.shields.io/badge/rust-1.90%2B-orange.svg)](https://www.rust-lang.org/)
 
 > A fast, customizable static site generator for creating beautiful Linktree-like pages
 
