@@ -6,7 +6,6 @@ Cargo.lock
 
 # Output
 /output/
-*.html
 
 # IDE
 .vscode/
