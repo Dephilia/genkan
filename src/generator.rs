@@ -247,7 +247,7 @@ impl Generator {
     }
 
     fn resize_image(&self, image_data: &[u8], target_size: u32) -> Result<Vec<u8>> {
-        use image::{imageops::FilterType, ImageFormat};
+        use image::{ImageFormat, imageops::FilterType};
         use std::io::Cursor;
 
         // Load the image
