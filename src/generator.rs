@@ -16,6 +16,9 @@ use std::io::Read;
 use std::path::PathBuf;
 use tera::{Context as TeraContext, Tera};
 
+/// Default theme repository URL
+const DEFAULT_THEME_REPO: &str = "https://github.com/dephilia/genkan.git";
+
 /// Main site generator
 ///
 /// The Generator orchestrates the entire site generation process,
@@ -621,12 +624,86 @@ impl Generator {
     }
 }
 
+/// Downloads a theme from the default repository
+///
+/// Clones the Genkan repository and extracts the specified theme to the local themes directory.
+///
+/// # Arguments
+///
+/// * `theme_name` - Name of the theme to download
+///
+/// # Returns
+///
+/// * `Ok(PathBuf)` with the path to the downloaded theme directory
+/// * `Err(anyhow::Error)` if the download failed
+fn download_theme(theme_name: &str) -> Result<PathBuf> {
+    println!("Theme '{}' not found locally. Downloading from repository...", theme_name);
+
+    // Create themes directory if it doesn't exist
+    let themes_dir = PathBuf::from("themes");
+    fs::create_dir_all(&themes_dir)
+        .context("Failed to create themes directory")?;
+
+    // Create a temporary directory for cloning
+    let temp_dir = std::env::temp_dir().join(format!("genkan-theme-{}", theme_name));
+
+    // Remove temp dir if it exists from a previous run
+    let _ = fs::remove_dir_all(&temp_dir);
+
+    // Clone the repository
+    println!("Cloning repository...");
+    let _repo = git2::Repository::clone(DEFAULT_THEME_REPO, &temp_dir)
+        .context("Failed to clone theme repository")?;
+
+    // Check if the theme exists in the cloned repo
+    let theme_source_path = temp_dir.join("themes").join(theme_name);
+    if !theme_source_path.exists() || !theme_source_path.is_dir() {
+        let _ = fs::remove_dir_all(&temp_dir);
+        anyhow::bail!(
+            "Theme '{}' not found in the default repository. Available themes should be in the themes/ directory.",
+            theme_name
+        );
+    }
+
+    // Copy the theme to local themes directory
+    let theme_dest_path = themes_dir.join(theme_name);
+    copy_dir_recursive(&theme_source_path, &theme_dest_path)
+        .context("Failed to copy theme files")?;
+
+    // Clean up temporary directory
+    let _ = fs::remove_dir_all(&temp_dir);
+
+    println!("Theme '{}' downloaded successfully!", theme_name);
+    Ok(theme_dest_path)
+}
+
+/// Recursively copies a directory
+fn copy_dir_recursive(src: &PathBuf, dst: &PathBuf) -> Result<()> {
+    fs::create_dir_all(dst)?;
+
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let path = entry.path();
+        let dest_path = dst.join(entry.file_name());
+
+        if path.is_dir() {
+            copy_dir_recursive(&path, &dest_path)?;
+        } else {
+            fs::copy(&path, &dest_path)?;
+        }
+    }
+
+    Ok(())
+}
+
 /// Finds the path to a theme directory
 ///
 /// Searches for the theme in multiple locations:
 /// 1. `themes/{theme_name}`
 /// 2. `./themes/{theme_name}`
 /// 3. `../themes/{theme_name}`
+///
+/// If the theme is not found locally, attempts to download it from the default repository.
 ///
 /// # Arguments
 ///
@@ -650,8 +727,6 @@ pub fn find_theme_path(theme_name: &str) -> Result<PathBuf> {
         }
     }
 
-    anyhow::bail!(
-        "Theme '{}' not found. Please ensure the theme directory exists in the themes folder.",
-        theme_name
-    )
+    // Theme not found locally, attempt to download it
+    download_theme(theme_name)
 }
