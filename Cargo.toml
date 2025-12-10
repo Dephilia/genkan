@@ -19,9 +19,13 @@ anyhow = "1.0"
 qrcode = "0.14"
 image = "0.25"
 base64 = "0.22"
-ureq = "2.10"
+ureq = { version = "2.10", default-features = false, features = ["tls"] }
 regex = "1.10"
-git2 = "0.19"
+git2 = { version = "0.19", default-features = false, features = [
+  "https",
+  "vendored-libgit2",
+  "vendored-openssl",
+] }
 
 [lib]
 name = "genkan"
