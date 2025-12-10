@@ -637,12 +637,14 @@ impl Generator {
 /// * `Ok(PathBuf)` with the path to the downloaded theme directory
 /// * `Err(anyhow::Error)` if the download failed
 fn download_theme(theme_name: &str) -> Result<PathBuf> {
-    println!("Theme '{}' not found locally. Downloading from repository...", theme_name);
+    println!(
+        "Theme '{}' not found locally. Downloading from repository...",
+        theme_name
+    );
 
     // Create themes directory if it doesn't exist
     let themes_dir = PathBuf::from("themes");
-    fs::create_dir_all(&themes_dir)
-        .context("Failed to create themes directory")?;
+    fs::create_dir_all(&themes_dir).context("Failed to create themes directory")?;
 
     // Create a temporary directory for cloning
     let temp_dir = std::env::temp_dir().join(format!("genkan-theme-{}", theme_name));
