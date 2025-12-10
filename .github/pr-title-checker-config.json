@@ -1,0 +1,17 @@
+{
+  "LABEL": {
+    "success": "✅ Valid PR Title",
+    "failure": "❌ Invalid PR Title"
+  },
+  "CHECKS": {
+    "prefixes": ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"],
+    "regexp": "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\(.+\\))?!?: .{1,100}$",
+    "regexpFlags": "i",
+    "ignoreLabels": ["skip-title-check", "dependencies"]
+  },
+  "MESSAGES": {
+    "success": "PR title follows the conventional commit format! 🎉",
+    "failure": "PR title must follow conventional commit format:\n\n**Format:** `<type>(<scope>): <description>`\n\n**Types:** feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert\n\n**Examples:**\n- `feat: add new feature`\n- `fix: resolve bug in parser`\n- `docs: update README`\n- `feat(api): add new endpoint`\n- `fix(ui)!: breaking change in button component`",
+    "notice": ""
+  }
+}

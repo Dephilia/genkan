@@ -1,0 +1,50 @@
+name: PR Title Checker
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  check-pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title
+        uses: thehanimo/pr-title-checker@v1.4.2
+        id: pr_title_check
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pass_on_octokit_error: false
+          configuration_path: .github/pr-title-checker-config.json
+
+      - name: Display PR title validation result
+        if: always()
+        run: |
+          echo "PR Title Check Result: ${{ steps.pr_title_check.outcome }}"
+          echo "PR Title: ${{ github.event.pull_request.title }}"
+
+      - name: Comment on PR with validation result
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **PR Title Validation Failed**\n\nYour PR title does not match the required format. Please update your PR title to follow the project conventions.\n\nCurrent title: `${{ github.event.pull_request.title }}`'
+            })
+
+      - name: Comment on PR with success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **PR Title Validation Passed**\n\nYour PR title follows the required format. Thank you!'
+            })
