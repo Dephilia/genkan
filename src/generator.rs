@@ -109,12 +109,12 @@ impl Generator {
         // Process regular link icons (download and embed external images)
         let mut processed_links = self.config.links.clone();
         for link in &mut processed_links {
-            if let Some(ref icon) = link.icon {
-                if !icon.is_empty() {
-                    match self.process_icon(icon, link_icon_size) {
-                        Ok(processed) => link.icon = Some(processed),
-                        Err(e) => eprintln!("Warning: Failed to process link icon: {}", e),
-                    }
+            if let Some(ref icon) = link.icon
+                && !icon.is_empty()
+            {
+                match self.process_icon(icon, link_icon_size) {
+                    Ok(processed) => link.icon = Some(processed),
+                    Err(e) => eprintln!("Warning: Failed to process link icon: {}", e),
                 }
             }
         }
