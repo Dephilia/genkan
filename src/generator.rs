@@ -10,6 +10,7 @@
 use crate::config::Config;
 use anyhow::{Context, Result};
 use image::Luma;
+use minify_html::{Cfg, minify};
 use qrcode::QrCode;
 use std::fs;
 use std::io::Read;
@@ -204,13 +205,30 @@ impl Generator {
             .render("template.html", &html_context)
             .context("Failed to render HTML template")?;
 
+        // Minify HTML
+        let cfg = Cfg {
+            minify_css: true,
+            minify_js: true,
+            ..Cfg::default()
+        };
+        let original_size = rendered_html.len();
+        let minified_html = minify(rendered_html.as_bytes(), &cfg);
+        let minified_size = minified_html.len();
+        let reduction_percent =
+            ((original_size - minified_size) as f64 / original_size as f64) * 100.0;
+
+        println!(
+            "HTML minified: {} → {} bytes ({:.1}% reduction)",
+            original_size, minified_size, reduction_percent
+        );
+
         // Create output directory if it doesn't exist
         if let Some(parent) = self.output_path.parent() {
             fs::create_dir_all(parent).context("Failed to create output directory")?;
         }
 
         // Write output file
-        fs::write(&self.output_path, rendered_html).context("Failed to write output file")?;
+        fs::write(&self.output_path, minified_html).context("Failed to write output file")?;
 
         println!("Generated page at: {}", self.output_path.display());
         Ok(())

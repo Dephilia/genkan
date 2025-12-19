@@ -21,6 +21,7 @@ image = "0.25"
 base64 = "0.22"
 ureq = { version = "2.10", default-features = false, features = ["tls"] }
 regex = "1.10"
+minify-html = "0.15"
 git2 = { version = "0.19", default-features = false, features = [
   "https",
   "vendored-libgit2",
